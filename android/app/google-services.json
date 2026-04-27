@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "816394314378",
+    "project_id": "snapgive-40732",
+    "storage_bucket": "snapgive-40732.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:816394314378:android:768474da52343dfde08373",
+        "android_client_info": {
+          "package_name": "com.snapgive.snapgive"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBW0GLmCyFxlHaxpHTc7RUiHyWGou3fIJw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
