@@ -34,13 +34,22 @@ class _ResultScreenState extends State<ResultScreen> {
       body: BlocBuilder<ScanBloc, ScanState>(
         builder: (context, scanState) {
           if (scanState is ScanLoading) {
-            return const Center(
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: AppColors.primary),
-                  SizedBox(height: 16),
-                  Text('Analyzing item...', style: TextStyle(color: AppColors.textSecondary)),
+                  const CircularProgressIndicator(color: AppColors.primary),
+                  const SizedBox(height: 16),
+                  if (scanState.preliminaryLabel != null) ...[
+                    Text('Possible Category:', style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text('${scanState.preliminaryLabel}', 
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    const SizedBox(height: 16),
+                    const Text('Getting donation details...', style: TextStyle(color: AppColors.textSecondary)),
+                  ] else ...[
+                    const Text('Analyzing item...', style: TextStyle(color: AppColors.textSecondary)),
+                  ]
                 ],
               ),
             );

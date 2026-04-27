@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:equatable/equatable.dart';
+import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/donatable_item.dart';
 
@@ -26,7 +27,13 @@ abstract class ScanState extends Equatable {
 
 class ScanInitial extends ScanState {}
 
-class ScanLoading extends ScanState {}
+class ScanLoading extends ScanState {
+  final String? preliminaryLabel;
+  ScanLoading({this.preliminaryLabel});
+
+  @override
+  List<Object?> get props => [preliminaryLabel];
+}
 
 class ScanSuccess extends ScanState {
   final DonatableItem item;
@@ -45,15 +52,47 @@ class ScanError extends ScanState {
 }
 
 class ScanBloc extends Bloc<ScanEvent, ScanState> {
+  final ImageLabeler _labeler = ImageLabeler(options: ImageLabelerOptions(confidenceThreshold: 0.5));
+
   ScanBloc() : super(ScanInitial()) {
     on<ScanImageEvent>(_onScanImage);
+  }
+
+  @override
+  Future<void> close() {
+    _labeler.close();
+    return super.close();
   }
 
   Future<void> _onScanImage(ScanImageEvent event, Emitter<ScanState> emit) async {
     emit(ScanLoading());
     try {
+      // 1. ML Kit Local Identification (Fast)
+      final inputImage = InputImage.fromFile(event.imageFile);
+      final labels = await _labeler.processImage(inputImage);
+      final labelString = labels.map((l) => '${l.label} (${(l.confidence * 100).toStringAsFixed(0)}%)').join(', ');
+      
+      final preliminaryCategory = _mapLabelsToCategory(labels.map((e) => e.label.toLowerCase()).toList());
+      if (preliminaryCategory != null) {
+        emit(ScanLoading(preliminaryLabel: preliminaryCategory));
+      }
+
+      // 2. Gemini Detailed Analysis (Deep)
       final bytes = await event.imageFile.readAsBytes();
       final base64Image = base64Encode(bytes);
+
+      final prompt = '''
+Analyze this image and identify the item. 
+Local ML Kit detected these possible labels: $labelString.
+
+Please determine:
+1) What is this item?
+2) What category does it belong to (clothing, electronics, books, furniture, or other)?
+3) What is its condition (good, fair, poor)?
+4) A brief description.
+
+Provide your response as a concise JSON with fields: name, category, condition, description.
+''';
 
       final response = await http.post(
         Uri.parse('${ApiConstants.geminiVisionUrl}?key=${ApiConstants.geminiApiKey}'),
@@ -61,9 +100,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
         body: jsonEncode({
           'contents': [{
             'parts': [
-              {
-                'text': 'Analyze this image and identify the item. Determine: 1) What is this item? 2) What category does it belong to (clothing, electronics, books, furniture, or other)? 3) What is its condition (good, fair, poor)? Provide your response as a concise JSON with fields: name, category, condition, description.'
-              },
+              {'text': prompt},
               {
                 'inlineData': {
                   'mimeType': 'image/jpeg',
@@ -124,5 +161,23 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
       condition: condition,
       description: description,
     );
+  }
+
+  String? _mapLabelsToCategory(List<String> labels) {
+    if (labels.isEmpty) return null;
+
+    final clothingKeywords = ['clothing', 'apparel', 'shirt', 'pants', 'dress', 'shoe', 'fabric', 'textile', 'jeans', 'footwear'];
+    final electronicsKeywords = ['electronics', 'gadget', 'computer', 'phone', 'laptop', 'screen', 'device', 'appliance', 'audio', 'television'];
+    final furnitureKeywords = ['furniture', 'chair', 'table', 'desk', 'sofa', 'couch', 'bed', 'cabinet', 'wood', 'room', 'seating'];
+    final booksKeywords = ['book', 'paper', 'document', 'text', 'reading', 'novel', 'magazine'];
+
+    for (var label in labels) {
+      if (clothingKeywords.any((k) => label.contains(k))) return 'Clothing & Apparel';
+      if (electronicsKeywords.any((k) => label.contains(k))) return 'Electronics & Gadgets';
+      if (furnitureKeywords.any((k) => label.contains(k))) return 'Furniture & Home Goods';
+      if (booksKeywords.any((k) => label.contains(k))) return 'Books & Media';
+    }
+    
+    return 'Miscellaneous/Other';
   }
 }

@@ -46,7 +46,7 @@ class NgoError extends NgoState {
 }
 
 class NgoBloc extends Bloc<NgoEvent, NgoState> {
-  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+  DatabaseReference get _dbRef => FirebaseDatabase.instance.ref();
   List<Ngo> _allNgos = [];
 
   NgoBloc() : super(NgoInitial()) {

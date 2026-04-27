@@ -1,6 +1,6 @@
 class ApiConstants {
-  static const String geminiVisionUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
-  static const String geminiApiKey = 'YOUR_GEMINI_API_KEY';
+  static const String geminiVisionUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+  static const String geminiApiKey = 'AIzaSyA4FSc03TTkP9isVSgfvgUjs3XmVaLLxNo';
 }
 
 class AppConstants {
