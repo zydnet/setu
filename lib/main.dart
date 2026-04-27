@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/bloc/scan_bloc.dart';
 import 'presentation/bloc/ngo_bloc.dart';
+import 'presentation/bloc/donation_bloc.dart';
 import 'presentation/screens/home_screen.dart';
 
 void main() async {
@@ -25,6 +26,7 @@ class SnapGiveApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => ScanBloc()),
         BlocProvider(create: (_) => NgoBloc()..add(LoadNgosEvent())),
+        BlocProvider(create: (_) => DonationBloc()),
       ],
       child: MaterialApp(
         title: 'SnapGive',

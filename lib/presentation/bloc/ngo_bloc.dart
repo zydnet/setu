@@ -19,6 +19,16 @@ class MatchNgosEvent extends NgoEvent {
   List<Object?> get props => [category];
 }
 
+class UpdateNgoNeedsEvent extends NgoEvent {
+  final String ngoId;
+  final Map<ItemCategory, bool> updatedNeeds;
+  
+  UpdateNgoNeedsEvent(this.ngoId, this.updatedNeeds);
+
+  @override
+  List<Object?> get props => [ngoId, updatedNeeds];
+}
+
 abstract class NgoState extends Equatable {
   @override
   List<Object?> get props => [];
@@ -52,12 +62,13 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
   NgoBloc() : super(NgoInitial()) {
     on<LoadNgosEvent>(_onLoadNgos);
     on<MatchNgosEvent>(_onMatchNgos);
+    on<UpdateNgoNeedsEvent>(_onUpdateNgoNeeds);
   }
 
   Future<void> _onLoadNgos(LoadNgosEvent event, Emitter<NgoState> emit) async {
     emit(NgoLoading());
     try {
-      final snapshot = await _dbRef.child('ngos').get();
+      final snapshot = await _dbRef.child('ngos').get().timeout(const Duration(seconds: 3));
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
         _allNgos = data.entries
@@ -66,13 +77,17 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
       } else {
         _allNgos = _getMockNgos();
         for (final ngo in _allNgos) {
-          await _dbRef.child('ngos/${ngo.id}').set({
-            'name': ngo.name,
-            'address': ngo.address,
-            'latitude': ngo.latitude,
-            'longitude': ngo.longitude,
-            'needs': ngo.needs.map((k, v) => MapEntry(k.name, v)),
-          });
+          try {
+            await _dbRef.child('ngos/${ngo.id}').set({
+              'name': ngo.name,
+              'address': ngo.address,
+              'latitude': ngo.latitude,
+              'longitude': ngo.longitude,
+              'needs': ngo.needs.map((k, v) => MapEntry(k.name, v)),
+            }).timeout(const Duration(seconds: 2));
+          } catch (_) {
+            // Ignore write timeouts on mock data seeding
+          }
         }
       }
       emit(NgoLoaded(_allNgos, _allNgos));
@@ -85,6 +100,35 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
   void _onMatchNgos(MatchNgosEvent event, Emitter<NgoState> emit) {
     final matched = _allNgos.where((ngo) => ngo.needsCategory(event.category)).toList();
     emit(NgoLoaded(_allNgos, matched));
+  }
+
+  Future<void> _onUpdateNgoNeeds(UpdateNgoNeedsEvent event, Emitter<NgoState> emit) async {
+    try {
+      final needsMap = event.updatedNeeds.map((k, v) => MapEntry(k.name, v));
+      try {
+        await _dbRef.child('ngos/${event.ngoId}/needs').update(needsMap).timeout(const Duration(seconds: 2));
+      } catch (_) {
+        // Ignore timeout on save so local state still updates instantly
+      }
+      
+      final ngoIndex = _allNgos.indexWhere((ngo) => ngo.id == event.ngoId);
+      if (ngoIndex != -1) {
+        final oldNgo = _allNgos[ngoIndex];
+        _allNgos[ngoIndex] = Ngo(
+          id: oldNgo.id,
+          name: oldNgo.name,
+          address: oldNgo.address,
+          latitude: oldNgo.latitude,
+          longitude: oldNgo.longitude,
+          needs: event.updatedNeeds,
+        );
+      }
+      
+      emit(NgoLoaded(_allNgos, _allNgos));
+    } catch (e) {
+      emit(NgoError(e.toString()));
+      emit(NgoLoaded(_allNgos, _allNgos)); // fallback to loaded
+    }
   }
 
   List<Ngo> _getMockNgos() {

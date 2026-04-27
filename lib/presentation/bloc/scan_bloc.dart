@@ -52,7 +52,8 @@ class ScanError extends ScanState {
 }
 
 class ScanBloc extends Bloc<ScanEvent, ScanState> {
-  final ImageLabeler _labeler = ImageLabeler(options: ImageLabelerOptions(confidenceThreshold: 0.5));
+  final ImageLabeler _labeler =
+      ImageLabeler(options: ImageLabelerOptions(confidenceThreshold: 0.5));
 
   ScanBloc() : super(ScanInitial()) {
     on<ScanImageEvent>(_onScanImage);
@@ -64,15 +65,20 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
     return super.close();
   }
 
-  Future<void> _onScanImage(ScanImageEvent event, Emitter<ScanState> emit) async {
+  Future<void> _onScanImage(
+      ScanImageEvent event, Emitter<ScanState> emit) async {
     emit(ScanLoading());
     try {
       // 1. ML Kit Local Identification (Fast)
       final inputImage = InputImage.fromFile(event.imageFile);
       final labels = await _labeler.processImage(inputImage);
-      final labelString = labels.map((l) => '${l.label} (${(l.confidence * 100).toStringAsFixed(0)}%)').join(', ');
-      
-      final preliminaryCategory = _mapLabelsToCategory(labels.map((e) => e.label.toLowerCase()).toList());
+      final labelString = labels
+          .map(
+              (l) => '${l.label} (${(l.confidence * 100).toStringAsFixed(0)}%)')
+          .join(', ');
+
+      final preliminaryCategory = _mapLabelsToCategory(
+          labels.map((e) => e.label.toLowerCase()).toList());
       if (preliminaryCategory != null) {
         emit(ScanLoading(preliminaryLabel: preliminaryCategory));
       }
@@ -95,26 +101,27 @@ Provide your response as a concise JSON with fields: name, category, condition, 
 ''';
 
       final response = await http.post(
-        Uri.parse('${ApiConstants.geminiVisionUrl}?key=${ApiConstants.geminiApiKey}'),
+        Uri.parse(
+            '${ApiConstants.geminiVisionUrl}?key=${ApiConstants.geminiApiKey}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'contents': [{
-            'parts': [
-              {'text': prompt},
-              {
-                'inlineData': {
-                  'mimeType': 'image/jpeg',
-                  'data': base64Image
+          'contents': [
+            {
+              'parts': [
+                {'text': prompt},
+                {
+                  'inlineData': {'mimeType': 'image/jpeg', 'data': base64Image}
                 }
-              }
-            ]
-          }]
+              ]
+            }
+          ]
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final text = data['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? '';
+        final text =
+            data['candidates']?[0]?['content']?['parts']?[0]?['text'] ?? '';
         final item = _parseGeminiResponse(text);
         emit(ScanSuccess(item));
       } else {
@@ -166,18 +173,63 @@ Provide your response as a concise JSON with fields: name, category, condition, 
   String? _mapLabelsToCategory(List<String> labels) {
     if (labels.isEmpty) return null;
 
-    final clothingKeywords = ['clothing', 'apparel', 'shirt', 'pants', 'dress', 'shoe', 'fabric', 'textile', 'jeans', 'footwear'];
-    final electronicsKeywords = ['electronics', 'gadget', 'computer', 'phone', 'laptop', 'screen', 'device', 'appliance', 'audio', 'television'];
-    final furnitureKeywords = ['furniture', 'chair', 'table', 'desk', 'sofa', 'couch', 'bed', 'cabinet', 'wood', 'room', 'seating'];
-    final booksKeywords = ['book', 'paper', 'document', 'text', 'reading', 'novel', 'magazine'];
+    final clothingKeywords = [
+      'clothing',
+      'apparel',
+      'shirt',
+      'pants',
+      'dress',
+      'shoe',
+      'fabric',
+      'textile',
+      'jeans',
+      'footwear'
+    ];
+    final electronicsKeywords = [
+      'electronics',
+      'gadget',
+      'computer',
+      'phone',
+      'laptop',
+      'screen',
+      'device',
+      'appliance',
+      'audio',
+      'television'
+    ];
+    final furnitureKeywords = [
+      'furniture',
+      'chair',
+      'table',
+      'desk',
+      'sofa',
+      'couch',
+      'bed',
+      'cabinet',
+      'wood',
+      'room',
+      'seating'
+    ];
+    final booksKeywords = [
+      'book',
+      'paper',
+      'document',
+      'text',
+      'reading',
+      'novel',
+      'magazine'
+    ];
 
     for (var label in labels) {
-      if (clothingKeywords.any((k) => label.contains(k))) return 'Clothing & Apparel';
-      if (electronicsKeywords.any((k) => label.contains(k))) return 'Electronics & Gadgets';
-      if (furnitureKeywords.any((k) => label.contains(k))) return 'Furniture & Home Goods';
+      if (clothingKeywords.any((k) => label.contains(k)))
+        return 'Clothing & Apparel';
+      if (electronicsKeywords.any((k) => label.contains(k)))
+        return 'Electronics & Gadgets';
+      if (furnitureKeywords.any((k) => label.contains(k)))
+        return 'Furniture & Home Goods';
       if (booksKeywords.any((k) => label.contains(k))) return 'Books & Media';
     }
-    
+
     return 'Miscellaneous/Other';
   }
 }

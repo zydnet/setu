@@ -5,6 +5,8 @@ enum ItemCategory {
   electronics,
   books,
   furniture,
+  toys,
+  food,
   other,
 }
 
@@ -36,6 +38,10 @@ class DonatableItem extends Equatable {
       return ItemCategory.books;
     } else if (lower.contains('furniture') || lower.contains('chair') || lower.contains('table')) {
       return ItemCategory.furniture;
+    } else if (lower.contains('toy') || lower.contains('game')) {
+      return ItemCategory.toys;
+    } else if (lower.contains('food') || lower.contains('grocery') || lower.contains('meal')) {
+      return ItemCategory.food;
     }
     return ItemCategory.other;
   }

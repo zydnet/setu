@@ -54,6 +54,10 @@ class Ngo extends Equatable {
         return ItemCategory.books;
       case 'furniture':
         return ItemCategory.furniture;
+      case 'toys':
+        return ItemCategory.toys;
+      case 'food':
+        return ItemCategory.food;
       case 'other':
         return ItemCategory.other;
       default:

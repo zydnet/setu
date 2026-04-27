@@ -1,11 +1,10 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart';
 import '../../core/theme/app_theme.dart';
-import '../bloc/scan_bloc.dart';
-import 'result_screen.dart';
+import 'camera_tab.dart';
+import 'home_tab.dart';
+import 'profile_tab.dart';
+import 'ngo_home_tab.dart';
+import 'ngo_profile_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,158 +14,95 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  CameraController? _controller;
-  List<CameraDescription>? _cameras;
-  bool _isInitialized = false;
-  bool _isProcessing = false;
+  int _donorTabIndex = 0;
+  int _ngoTabIndex = 0;
+  bool _isNgoMode = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeCamera();
-  }
+  final List<Widget> _donorTabs = const [
+    HomeTab(),
+    CameraTab(),
+    ProfileTab(),
+  ];
 
-  Future<void> _initializeCamera() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      try {
-        _cameras = await availableCameras();
-        if (_cameras != null && _cameras!.isNotEmpty) {
-          _controller = CameraController(
-            _cameras!.first,
-            ResolutionPreset.high,
-            enableAudio: false,
-          );
-          await _controller!.initialize();
-          if (mounted) {
-            setState(() => _isInitialized = true);
-          }
-        }
-      } catch (e) {
-        debugPrint('Camera init error: $e');
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _captureAndScan() async {
-    if (_controller == null || !_controller!.value.isInitialized || _isProcessing) {
-      return;
-    }
-
-    setState(() => _isProcessing = true);
-
-    try {
-      final image = await _controller!.takePicture();
-      if (mounted) {
-        context.read<ScanBloc>().add(ScanImageEvent(File(image.path)));
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => BlocProvider.value(
-            value: context.read<ScanBloc>(),
-            child: const ResultScreen(),
-          )),
-        );
-      }
-    } catch (e) {
-      debugPrint('Capture error: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
-    }
-  }
+  final List<Widget> _ngoTabs = const [
+    NgoHomeTab(),
+    NgoProfileTab(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('SnapGive'),
-        backgroundColor: AppColors.primary,
-      ),
-      body: _buildBody(),
-    );
-  }
+    final currentIndex = _isNgoMode ? _ngoTabIndex : _donorTabIndex;
+    final currentTitle = _isNgoMode 
+        ? (currentIndex == 0 ? 'Incoming Donations' : 'NGO Profile')
+        : (currentIndex == 0 ? 'Nearby NGOs' : (currentIndex == 1 ? 'Scan Item' : 'Donor Profile'));
 
-  Widget _buildBody() {
-    if (!_isInitialized || _controller == null) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: AppColors.primary),
-            SizedBox(height: 16),
-            Text('Initializing camera...', style: TextStyle(color: AppColors.textSecondary)),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: Text(currentTitle, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w800, letterSpacing: -0.5)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0, // prevents color change on scroll
+        iconTheme: const IconThemeData(color: Colors.black87),
+        actions: [
+          Row(
+            children: [
+              const Text('NGO Mode', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.black54)),
+              Switch(
+                value: _isNgoMode,
+                activeColor: Colors.white,
+                activeTrackColor: AppColors.primary,
+                inactiveThumbColor: Colors.white,
+                inactiveTrackColor: Colors.grey.shade300,
+                onChanged: (val) {
+                  setState(() {
+                    _isNgoMode = val;
+                  });
+                },
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: _isNgoMode ? _ngoTabs[_ngoTabIndex] : _donorTabs[_donorTabIndex],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
           ],
         ),
-      );
-    }
-
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: CameraPreview(_controller!),
+        child: BottomNavigationBar(
+          currentIndex: currentIndex,
+          onTap: (index) {
+            setState(() {
+              if (_isNgoMode) {
+                _ngoTabIndex = index;
+              } else {
+                _donorTabIndex = index;
+              }
+            });
+          },
+          selectedItemColor: AppColors.primary,
+          unselectedItemColor: AppColors.textSecondary,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          items: _isNgoMode
+              ? const [
+                  BottomNavigationBarItem(icon: Icon(Icons.inbox), label: 'Donations'),
+                  BottomNavigationBarItem(icon: Icon(Icons.domain), label: 'Profile'),
+                ]
+              : const [
+                  BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+                  BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'Camera'),
+                  BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+                ],
         ),
-        Positioned(
-          bottom: 40,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: GestureDetector(
-              onTap: _captureAndScan,
-              child: Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: _isProcessing ? AppColors.textSecondary : AppColors.primary,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: _isProcessing
-                    ? const Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 3,
-                        ),
-                      )
-                    : const Icon(Icons.camera_alt, color: Colors.white, size: 32),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 130,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Point at item and tap to identify',
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
