@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../domain/entities/ngo.dart';
 import '../../../domain/entities/donatable_item.dart';
 
@@ -68,14 +69,46 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
   Future<void> _onLoadNgos(LoadNgosEvent event, Emitter<NgoState> emit) async {
     emit(NgoLoading());
     try {
+      Position? currentPosition;
+      try {
+        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (serviceEnabled) {
+          LocationPermission permission = await Geolocator.checkPermission();
+          if (permission == LocationPermission.denied) {
+            permission = await Geolocator.requestPermission();
+          }
+          if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+            currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low).timeout(const Duration(seconds: 3));
+          }
+        }
+      } catch (_) {
+        // ignore location errors to prevent crashing the flow
+      }
+
       final snapshot = await _dbRef.child('ngos').get().timeout(const Duration(seconds: 3));
       if (snapshot.exists) {
         final data = snapshot.value as Map<dynamic, dynamic>;
         _allNgos = data.entries
             .map((e) => Ngo.fromJson(e.key as String, e.value as Map<dynamic, dynamic>))
             .toList();
+            
+        // If we loaded from Firebase but have a dynamic location, offset the DB coordinates
+        if (currentPosition != null) {
+          _allNgos = _allNgos.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final ngo = entry.value;
+            return Ngo(
+              id: ngo.id,
+              name: ngo.name,
+              address: 'Dynamic Local Address',
+              latitude: currentPosition!.latitude + (idx * 0.005) - 0.002,
+              longitude: currentPosition!.longitude + (idx * 0.005) - 0.002,
+              needs: ngo.needs,
+            );
+          }).toList();
+        }
       } else {
-        _allNgos = _getMockNgos();
+        _allNgos = _getMockNgos(currentPosition);
         for (final ngo in _allNgos) {
           try {
             await _dbRef.child('ngos/${ngo.id}').set({
@@ -92,7 +125,7 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
       }
       emit(NgoLoaded(_allNgos, _allNgos));
     } catch (e) {
-      _allNgos = _getMockNgos();
+      _allNgos = _getMockNgos(null);
       emit(NgoLoaded(_allNgos, _allNgos));
     }
   }
@@ -131,14 +164,18 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
     }
   }
 
-  List<Ngo> _getMockNgos() {
+  List<Ngo> _getMockNgos(Position? position) {
+    // If no position, fallback to Chennai coordinates
+    double lat = position?.latitude ?? 13.0604;
+    double lon = position?.longitude ?? 80.2496;
+    
     return [
-      const Ngo(
+      Ngo(
         id: 'ngo_1',
         name: 'Downtown Shelter',
-        address: '123 Main St, San Francisco, CA',
-        latitude: 37.7749,
-        longitude: -122.4194,
+        address: position != null ? 'Local Neighborhood Area' : '123 Anna Salai, Chennai, TN',
+        latitude: lat + 0.002,
+        longitude: lon + 0.002,
         needs: {
           ItemCategory.clothing: true,
           ItemCategory.electronics: false,
@@ -147,12 +184,12 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
           ItemCategory.other: false,
         },
       ),
-      const Ngo(
+      Ngo(
         id: 'ngo_2',
         name: 'Community Aid Center',
-        address: '456 Oak Ave, San Francisco, CA',
-        latitude: 37.7849,
-        longitude: -122.4094,
+        address: position != null ? 'Nearby Community Hub' : '456 T Nagar, Chennai, TN',
+        latitude: lat - 0.005,
+        longitude: lon + 0.003,
         needs: {
           ItemCategory.clothing: true,
           ItemCategory.electronics: true,
@@ -161,12 +198,12 @@ class NgoBloc extends Bloc<NgoEvent, NgoState> {
           ItemCategory.other: true,
         },
       ),
-      const Ngo(
+      Ngo(
         id: 'ngo_3',
-        name: 'Westside Food Bank',
-        address: '789 Market St, San Francisco, CA',
-        latitude: 37.7649,
-        longitude: -122.4294,
+        name: 'Local Food Bank',
+        address: position != null ? 'City Center District' : '789 Adyar, Chennai, TN',
+        latitude: lat + 0.004,
+        longitude: lon - 0.004,
         needs: {
           ItemCategory.clothing: false,
           ItemCategory.electronics: true,
