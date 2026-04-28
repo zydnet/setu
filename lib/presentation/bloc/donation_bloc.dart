@@ -9,6 +9,11 @@ class AddDonationEvent extends DonationEvent {
   AddDonationEvent(this.donation);
 }
 
+class RemoveDonationEvent extends DonationEvent {
+  final String donationId;
+  RemoveDonationEvent(this.donationId);
+}
+
 // State
 class DonationState {
   final List<DonationRequest> donations;
@@ -21,6 +26,11 @@ class DonationBloc extends Bloc<DonationEvent, DonationState> {
     on<AddDonationEvent>((event, emit) {
       final updatedList = List<DonationRequest>.from(state.donations);
       updatedList.insert(0, event.donation);
+      emit(DonationState(updatedList));
+    });
+
+    on<RemoveDonationEvent>((event, emit) {
+      final updatedList = state.donations.where((d) => d.id != event.donationId).toList();
       emit(DonationState(updatedList));
     });
   }
