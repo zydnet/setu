@@ -53,16 +53,16 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyBW0GLmCyFxlHaxpHTc7RUiHyWGou3fIJw',
     appId: '1:816394314378:android:768474da52343dfde08373',
     messagingSenderId: '816394314378',
-    projectId: 'snapgive-40732',
-    storageBucket: 'snapgive-40732.firebasestorage.app',
+    projectId: 'setu-40732',
+    storageBucket: 'setu-40732.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAje7mcIU1aKw54urhJslByM4bjgAU7sPw',
     appId: '1:816394314378:ios:43682c0a77811825e08373',
     messagingSenderId: '816394314378',
-    projectId: 'snapgive-40732',
-    storageBucket: 'snapgive-40732.firebasestorage.app',
-    iosBundleId: 'com.snapgive.snapgive',
+    projectId: 'setu-40732',
+    storageBucket: 'setu-40732.firebasestorage.app',
+    iosBundleId: 'com.setu.setu',
   );
 }

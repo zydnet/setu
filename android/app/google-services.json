@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "816394314378",
-    "project_id": "snapgive-40732",
-    "storage_bucket": "snapgive-40732.firebasestorage.app"
+    "project_id": "setu-40732",
+    "storage_bucket": "setu-40732.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:816394314378:android:768474da52343dfde08373",
         "android_client_info": {
-          "package_name": "com.snapgive.snapgive"
+          "package_name": "com.setu.setu"
         }
       },
       "oauth_client": [],

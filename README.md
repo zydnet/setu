@@ -1,4 +1,4 @@
-# snapgive
+# setu
 
 A new Flutter project.
 

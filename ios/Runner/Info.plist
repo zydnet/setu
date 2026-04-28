@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Snapgive</string>
+	<string>setu</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>snapgive</string>
+	<string>setu</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -46,10 +46,10 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>SnapGive needs camera access to photograph items you want to donate.</string>
+	<string>setu needs camera access to photograph items you want to donate.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>SnapGive needs your location to find nearby NGOs that accept your donations.</string>
+	<string>setu needs your location to find nearby NGOs that accept your donations.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SnapGive needs photo library access to save donation photos.</string>
+	<string>setu needs photo library access to save donation photos.</string>
 </dict>
 </plist>

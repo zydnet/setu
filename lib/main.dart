@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/bloc/scan_bloc.dart';
 import 'presentation/bloc/ngo_bloc.dart';
@@ -9,16 +10,17 @@ import 'presentation/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   try {
     await Firebase.initializeApp();
   } catch (e) {
     debugPrint('Firebase init error (using mock data): $e');
   }
-  runApp(const SnapGiveApp());
+  runApp(const SetuApp());
 }
 
-class SnapGiveApp extends StatelessWidget {
-  const SnapGiveApp({super.key});
+class SetuApp extends StatelessWidget {
+  const SetuApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class SnapGiveApp extends StatelessWidget {
         BlocProvider(create: (_) => DonationBloc()),
       ],
       child: MaterialApp(
-        title: 'SnapGive',
+        title: 'setu',
         theme: AppTheme.lightTheme,
         debugShowCheckedModeBanner: false,
         home: const HomeScreen(),

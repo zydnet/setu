@@ -1,4 +1,4 @@
-package com.snapgive.snapgive
+package com.setu.setu
 
 import io.flutter.embedding.android.FlutterActivity
 
