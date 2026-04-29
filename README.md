@@ -107,10 +107,9 @@ Setu actively contributes to the United Nations Sustainable Development Goals:
 <a name="Skills"></a>
 # Skills & Technologies
 
-|   Firebase   |    Flutter    |  Gemini 1.5 Pro API  | Google ML Kit | Google Maps |
-|:------------:|:-------------:|:-------------:|:-------------:|:-------------:|
-|  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Firebase_Logo.svg/1280px-Firebase_Logo.svg.png" alt="Firebase Logo" width="100"> | <img src="https://modulabs.co.kr/wp-content/uploads/2023/06/flutter-logo-sharing.png" alt="Flutter Logo" width="100"> | <img src="https://miro.medium.com/v2/resize:fit:1200/1*gLJsygEtXnh9ROcbYi-34w.jpeg" alt="Gemini 1.5 Pro API" width="100"> | <img src="https://developers.google.com/static/ml-kit/images/ml-kit-logo.png" alt="ML Kit" width="100"> | <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Google_Maps_Logo_2020.svg/512px-Google_Maps_Logo_2020.svg.png" alt="Google Maps" width="100"> |
-
+| Firebase | Flutter | Gemini 1.5 Pro API | Google ML Kit | Google Maps |
+|:--------:|:-------:|:------------------:|:-------------:|:-----------:|
+| <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/37/Firebase_Logo.svg/1280px-Firebase_Logo.svg.png" alt="Firebase Logo" width="120"> | <img src="https://github.com/user-attachments/assets/ac5cfa4c-e045-424d-9319-f9eec6b8472f" alt="Flutter Logo" width="120"> | <img src="https://miro.medium.com/v2/resize:fit:1200/1*gLJsygEtXnh9ROcbYi-34w.jpeg" alt="Gemini 1.5 Pro API" width="120"> | <img src="https://github.com/user-attachments/assets/fb2792e6-c94c-4bd8-bfb0-1358a868ff13" alt="ML Kit" width="120"> | <img src="https://github.com/user-attachments/assets/4c2cdca0-8bb0-4eba-a79f-4227f5679583" alt="Google Maps" width="120"> |
 ---
 
 <a name="Screens"></a>
