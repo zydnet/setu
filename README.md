@@ -1,10 +1,10 @@
 <!-- Banner Placeholder -->
-<div align="center">
+<!-- <div align="center">
   <img src="assets/images/banner.png" alt="Setu Banner" width="100%">
-</div>
+</div> -->
 
-# Setu (सेतु)
-
+# Setu (सेतु) 
+Meaning Bridge . 
 The project proposes an intelligent solution to bridge the massive gap between people who want to donate unused goods and the Non-Governmental Organizations (NGOs) that desperately need them. Through Setu—a dual-sided platform powered by AI—users can **<u>effortlessly donate by simply taking a photo, while NGOs can dynamically manage their live inventory needs.</u>**
 
 ---
@@ -19,7 +19,7 @@ Here are the steps to run the Setu Flutter app locally on your machine or Androi
 4. Before running the application, you need API keys for Google Gemini and Google Maps:
     1. Issue your Gemini API Key from Google AI Studio.
     2. Issue your Google Maps API Key from the Google Cloud Console.
-5. Create an `.env` file under your project root (or update `lib/core/constants/app_constants.dart` if hardcoded) and insert your keys:
+5. Create an `.env` file under your project root and insert your keys:
     ```
     GEMINI_API_KEY="Your_GEMINI_API_KEY"
     GOOGLE_MAPS_API_KEY="Your_Google_Maps_API_KEY"
@@ -28,7 +28,7 @@ Here are the steps to run the Setu Flutter app locally on your machine or Androi
 7. Once your IDE loads the project, run `flutter pub get` to install dependencies.
 8. Select an emulator or connect a mobile device and run the app!
 
-### **Test Accounts**
+<!-- ### **Test Accounts**
 - **Donor Account**
     - ID : donor@test.com
     - PW : password123
@@ -37,7 +37,7 @@ Here are the steps to run the Setu Flutter app locally on your machine or Androi
     - ID : ngo@test.com
     - PW : password123
 
----
+-->
 
 # Contents
 
